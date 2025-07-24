@@ -5,8 +5,8 @@ const nextConfig = {
   images: {
     unoptimized: true // Permite usar imagens externas sem otimização
   },
-  basePath: '', // Deixe vazio por enquanto, depois mudamos se necessário
-  assetPrefix: ''
+  basePath: '/github', // Configura o caminho base para GitHub Pages
+  assetPrefix: '/github/' // Prefixo para assets estáticos
 }
 
 module.exports = nextConfig
