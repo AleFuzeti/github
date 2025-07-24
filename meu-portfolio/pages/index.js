@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 export default function Home() {
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [activeCategory, setActiveCategory] = useState('all')
 
   // Configuração das categorias
@@ -35,8 +36,24 @@ export default function Home() {
 
   const fetchGitHubProjects = async () => {
     try {
-      const response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100')
+      console.log('Iniciando busca por projetos do GitHub...')
+      setError(null)
+      
+      const response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100', {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'Portfolio-Website'
+        }
+      })
+      
+      console.log('Response status:', response.status)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
+      console.log('Data received:', data.length, 'repositories')
 
       // Filtra apenas repos que não são forks e têm descrição
       const filteredProjects = data.filter(repo =>
@@ -45,6 +62,8 @@ export default function Home() {
         repo.name !== 'AleFuzeti'
       )
 
+      console.log('Filtered projects:', filteredProjects.length)
+
       // Categoriza os projetos
       const categorizedProjects = filteredProjects.map(repo => ({
         ...repo,
@@ -52,8 +71,72 @@ export default function Home() {
       }))
 
       setProjects(categorizedProjects)
+      console.log('Projects set successfully')
     } catch (error) {
       console.error('Erro ao buscar projetos:', error)
+      console.error('Error details:', error.message)
+      setError(error.message)
+      
+      // Fallback: dados de exemplo para desenvolvimento
+      const fallbackProjects = [
+        {
+          id: 1,
+          name: 'CNN-LIBRAS',
+          description: 'Visão Computacional e Redes Neurais Convolucionais para o reconhecimento de sinais da Língua Brasileira de Sinais por meio de imagens estáticas.',
+          html_url: 'https://github.com/AleFuzeti/CNN-LIBRAS',
+          language: 'Jupyter Notebook',
+          stargazers_count: 0,
+          category: 'data-science'
+        },
+        {
+          id: 2,
+          name: 'Reconhecedor-placas-de-carro',
+          description: 'Projeto de visão computacional para detecção e reconhecimento de placas de veículos utilizando OpenCV e OCR com Tesseract.',
+          html_url: 'https://github.com/AleFuzeti/Reconhecedor-placas-de-carro',
+          language: 'Python',
+          stargazers_count: 1,
+          category: 'data-science'
+        },
+        {
+          id: 3,
+          name: 'Fabula-Ultima-Helper',
+          description: 'Um aplicativo web para um sistema de RPG de mesa',
+          html_url: 'https://github.com/AleFuzeti/Fabula-Ultima-Helper',
+          language: 'JavaScript',
+          stargazers_count: 1,
+          category: 'websites'
+        },
+        {
+          id: 4,
+          name: 'casamento-react',
+          description: 'Site de casamento com react',
+          html_url: 'https://github.com/AleFuzeti/casamento-react',
+          language: 'JavaScript',
+          stargazers_count: 0,
+          category: 'websites'
+        },
+        {
+          id: 5,
+          name: 'Planetario',
+          description: 'Esquema 3d de sistema solar feito com glut para com Computação Gráfica',
+          html_url: 'https://github.com/AleFuzeti/Planetario',
+          language: 'C',
+          stargazers_count: 0,
+          category: 'other'
+        },
+        {
+          id: 6,
+         name: 'Jogo-Reciclagem',
+          description: 'Projeto de jogo para testar o conhecimento básico de reciclagem',
+          html_url: 'https://github.com/AleFuzeti/Jogo-Reciclagem',
+          language: 'Python',
+          stargazers_count: 0,
+          category: 'other'
+        }
+      ]
+      
+      setProjects(fallbackProjects)
+      console.log('Using fallback projects')
     } finally {
       setLoading(false)
     }
@@ -167,7 +250,17 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <div className="loading">Carregando projetos...</div>
+            <div className="loading">
+              <div className="loading-spinner"></div>
+              <p>Carregando projetos do GitHub...</p>
+            </div>
+          ) : error ? (
+            <div className="error-message">
+              <h3>⚠️ Problemas de conectividade</h3>
+              <p>Não foi possível carregar os projetos do GitHub.</p>
+              <p><strong>Motivo:</strong> {error}</p>
+              <p>Mostrando projetos de exemplo abaixo:</p>
+            </div>
           ) : (
             <>
               {/* Título da categoria ativa */}
@@ -468,6 +561,47 @@ export default function Home() {
           color: white;
           text-align: center;
           font-size: 1.2rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+          padding: 2rem;
+        }
+
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 3px solid rgba(255, 255, 255, 0.3);
+          border-top: 3px solid white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+          color: white;
+          text-align: center;
+          font-size: 1rem;
+          background: rgba(255, 87, 87, 0.1);
+          border: 1px solid rgba(255, 87, 87, 0.3);
+          border-radius: 12px;
+          padding: 2rem;
+          margin: 2rem 0;
+          backdrop-filter: blur(10px);
+        }
+
+        .error-message h3 {
+          color: #ff9999;
+          margin-bottom: 1rem;
+        }
+
+        .error-message p {
+          margin: 0.5rem 0;
+          opacity: 0.9;
         }
 
         .no-projects {
