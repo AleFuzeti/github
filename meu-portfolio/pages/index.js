@@ -34,12 +34,32 @@ export default function Home() {
     fetchGitHubProjects()
   }, [])
 
+  // Função alternativa usando cors-anywhere como proxy se necessário
+  const fetchWithProxy = async (url) => {
+    try {
+      // Tenta primeiro diretamente
+      let response = await fetch(url)
+      if (response.ok) return response
+      
+      // Se falhar, pode tentar com um proxy CORS (comentado por enquanto)
+      // const proxyUrl = 'https://cors-anywhere.herokuapp.com/'
+      // response = await fetch(proxyUrl + url)
+      // return response
+      
+      throw new Error(`Direct fetch failed with status: ${response.status}`)
+    } catch (error) {
+      console.log('Fetch with proxy also failed:', error)
+      throw error
+    }
+  }
+
   const fetchGitHubProjects = async () => {
     try {
       console.log('Iniciando busca por projetos do GitHub...')
       setError(null)
       
-      const response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100', {
+      // Tenta primeiro a API oficial do GitHub
+      let response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100', {
         headers: {
           'Accept': 'application/vnd.github.v3+json',
           'User-Agent': 'Portfolio-Website'
@@ -47,13 +67,23 @@ export default function Home() {
       })
       
       console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
+      
+      // Se der erro de rate limit ou CORS, tenta sem headers customizados
+      if (!response.ok) {
+        console.log('Primeira tentativa falhou, tentando sem headers customizados...')
+        response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100')
+      }
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.log('Error response text:', errorText)
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
       }
       
       const data = await response.json()
       console.log('Data received:', data.length, 'repositories')
+      console.log('Sample repo:', data[0])
 
       // Filtra apenas repos que não são forks e têm descrição
       const filteredProjects = data.filter(repo =>
@@ -75,7 +105,8 @@ export default function Home() {
     } catch (error) {
       console.error('Erro ao buscar projetos:', error)
       console.error('Error details:', error.message)
-      setError(error.message)
+      console.error('Error stack:', error.stack)
+      setError(`Falha na API: ${error.message}`)
       
       // Fallback: dados de exemplo para desenvolvimento
       const fallbackProjects = [
