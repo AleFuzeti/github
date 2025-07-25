@@ -5,8 +5,11 @@ const nextConfig = {
   images: {
     unoptimized: true // Permite usar imagens externas sem otimização
   },
-  basePath: '/github', // Configura o caminho base para GitHub Pages
-  assetPrefix: '/github/' // Prefixo para assets estáticos
+  // basePath e assetPrefix só para produção (GitHub Pages)
+  ...(process.env.NODE_ENV === 'production' && {
+    basePath: '/github',
+    assetPrefix: '/github/'
+  })
 }
 
 module.exports = nextConfig

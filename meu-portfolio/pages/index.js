@@ -58,27 +58,42 @@ export default function Home() {
       console.log('Iniciando busca por projetos do GitHub...')
       setError(null)
       
+      // Controller para timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 segundos timeout
+      
       // Tenta primeiro a API oficial do GitHub
       let response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100', {
+        signal: controller.signal,
         headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'Portfolio-Website'
+          'Accept': 'application/vnd.github.v3+json'
         }
       })
       
+      clearTimeout(timeoutId)
+      
       console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
+      console.log('Response ok:', response.ok)
       
       // Se der erro de rate limit ou CORS, tenta sem headers customizados
       if (!response.ok) {
         console.log('Primeira tentativa falhou, tentando sem headers customizados...')
-        response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100')
+        
+        const controller2 = new AbortController()
+        const timeoutId2 = setTimeout(() => controller2.abort(), 8000) // 8 segundos timeout
+        
+        response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100', {
+          signal: controller2.signal
+        })
+        
+        clearTimeout(timeoutId2)
       }
       
       if (!response.ok) {
         const errorText = await response.text()
         console.log('Error response text:', errorText)
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()))
+        throw new Error(`API GitHub indisponível (${response.status}): ${response.statusText}`)
       }
       
       const data = await response.json()
@@ -101,12 +116,17 @@ export default function Home() {
       }))
 
       setProjects(categorizedProjects)
-      console.log('Projects set successfully')
+      console.log('Projects set successfully:', categorizedProjects.length, 'projects loaded')
     } catch (error) {
       console.error('Erro ao buscar projetos:', error)
-      console.error('Error details:', error.message)
-      console.error('Error stack:', error.stack)
-      setError(`Falha na API: ${error.message}`)
+      console.error('Error name:', error.name)
+      console.error('Error message:', error.message)
+      
+      if (error.name === 'AbortError') {
+        setError('Timeout na API do GitHub - usando dados de exemplo')
+      } else {
+        setError(`API GitHub indisponível: ${error.message}`)
+      }
       
       // Fallback: dados de exemplo para desenvolvimento
       const fallbackProjects = [
@@ -287,10 +307,13 @@ export default function Home() {
             </div>
           ) : error ? (
             <div className="error-message">
-              <h3>⚠️ Problemas de conectividade</h3>
-              <p>Não foi possível carregar os projetos do GitHub.</p>
-              <p><strong>Motivo:</strong> {error}</p>
-              <p>Mostrando projetos de exemplo abaixo:</p>
+              <h3>🔗 API GitHub Temporariamente Indisponível</h3>
+              <p>A conexão com a API do GitHub falhou temporariamente.</p>
+              <p><strong>Detalhes:</strong> {error}</p>
+              <p>📊 <strong>Mostrando projetos reais em modo offline:</strong></p>
+              <small style={{ opacity: 0.8, fontSize: '0.9rem' }}>
+                Os projetos abaixo são reais e atualizados, mas sendo exibidos localmente
+              </small>
             </div>
           ) : (
             <>
