@@ -7,6 +7,9 @@ export default function Home() {
   const [error, setError] = useState(null)
   const [activeCategory, setActiveCategory] = useState('all')
 
+  // Controla se usa API do GitHub ou fallback projects
+  const useAPI = true // mude para false para usar apenas projetos locais
+
   // Configuração das categorias
   const categories = {
     'data-science': {
@@ -54,6 +57,74 @@ export default function Home() {
   }
 
   const fetchGitHubProjects = async () => {
+    // Fallback: dados de exemplo para desenvolvimento
+    const fallbackProjects = [
+      {
+        id: 1,
+        name: 'CNN-LIBRAS',
+        description: 'Visão Computacional e Redes Neurais Convolucionais para o reconhecimento de sinais da Língua Brasileira de Sinais por meio de imagens estáticas.',
+        html_url: 'https://github.com/AleFuzeti/CNN-LIBRAS',
+        language: 'Jupyter Notebook',
+        stargazers_count: 0,
+        category: 'data-science'
+      },
+      {
+        id: 2,
+        name: 'Reconhecedor-placas-de-carro',
+        description: 'Projeto de visão computacional para detecção e reconhecimento de placas de veículos utilizando OpenCV e OCR com Tesseract.',
+        html_url: 'https://github.com/AleFuzeti/Reconhecedor-placas-de-carro',
+        language: 'Python',
+        stargazers_count: 1,
+        category: 'data-science'
+      },
+      {
+        id: 3,
+        name: 'Fabula-Ultima-Helper',
+        description: 'Um aplicativo web para um sistema de RPG de mesa',
+        html_url: 'https://github.com/AleFuzeti/Fabula-Ultima-Helper',
+        site: 'https://alefuzeti.github.io/Fabula-Ultima-Helper/',
+        language: 'JavaScript',
+        stargazers_count: 1,
+        category: 'websites'
+      },
+      {
+        id: 4,
+        name: 'casamento-react',
+        description: 'Site de casamento com react',
+        html_url: 'https://github.com/AleFuzeti/casamento-react',
+        language: 'JavaScript',
+        stargazers_count: 0,
+        category: 'websites'
+      },
+      {
+        id: 5,
+        name: 'Planetario',
+        description: 'Esquema 3d de sistema solar feito com glut para com Computação Gráfica',
+        html_url: 'https://github.com/AleFuzeti/Planetario',
+        language: 'C',
+        stargazers_count: 0,
+        category: 'other'
+      },
+      {
+        id: 6,
+       name: 'Jogo-Reciclagem',
+        description: 'Projeto de jogo para testar o conhecimento básico de reciclagem',
+        html_url: 'https://github.com/AleFuzeti/Jogo-Reciclagem',
+        language: 'Python',
+        stargazers_count: 0,
+        category: 'other'
+      }
+    ]
+
+    if (!useAPI) {
+      // Modo demonstração - usando projetos locais
+      console.log('Modo demonstração - carregando projetos locais...')
+      setError('Modo demonstração - usando projetos locais')
+      setProjects(fallbackProjects)
+      setLoading(false)
+      return
+    }
+
     try {
       console.log('Iniciando busca por projetos do GitHub...')
       setError(null)
@@ -128,64 +199,6 @@ export default function Home() {
         setError(`API GitHub indisponível: ${error.message}`)
       }
       
-      // Fallback: dados de exemplo para desenvolvimento
-      const fallbackProjects = [
-        {
-          id: 1,
-          name: 'CNN-LIBRAS',
-          description: 'Visão Computacional e Redes Neurais Convolucionais para o reconhecimento de sinais da Língua Brasileira de Sinais por meio de imagens estáticas.',
-          html_url: 'https://github.com/AleFuzeti/CNN-LIBRAS',
-          language: 'Jupyter Notebook',
-          stargazers_count: 0,
-          category: 'data-science'
-        },
-        {
-          id: 2,
-          name: 'Reconhecedor-placas-de-carro',
-          description: 'Projeto de visão computacional para detecção e reconhecimento de placas de veículos utilizando OpenCV e OCR com Tesseract.',
-          html_url: 'https://github.com/AleFuzeti/Reconhecedor-placas-de-carro',
-          language: 'Python',
-          stargazers_count: 1,
-          category: 'data-science'
-        },
-        {
-          id: 3,
-          name: 'Fabula-Ultima-Helper',
-          description: 'Um aplicativo web para um sistema de RPG de mesa',
-          html_url: 'https://github.com/AleFuzeti/Fabula-Ultima-Helper',
-          language: 'JavaScript',
-          stargazers_count: 1,
-          category: 'websites'
-        },
-        {
-          id: 4,
-          name: 'casamento-react',
-          description: 'Site de casamento com react',
-          html_url: 'https://github.com/AleFuzeti/casamento-react',
-          language: 'JavaScript',
-          stargazers_count: 0,
-          category: 'websites'
-        },
-        {
-          id: 5,
-          name: 'Planetario',
-          description: 'Esquema 3d de sistema solar feito com glut para com Computação Gráfica',
-          html_url: 'https://github.com/AleFuzeti/Planetario',
-          language: 'C',
-          stargazers_count: 0,
-          category: 'other'
-        },
-        {
-          id: 6,
-         name: 'Jogo-Reciclagem',
-          description: 'Projeto de jogo para testar o conhecimento básico de reciclagem',
-          html_url: 'https://github.com/AleFuzeti/Jogo-Reciclagem',
-          language: 'Python',
-          stargazers_count: 0,
-          category: 'other'
-        }
-      ]
-      
       setProjects(fallbackProjects)
       console.log('Using fallback projects')
     } finally {
@@ -245,7 +258,7 @@ export default function Home() {
         <meta name="description" content="Portfólio de projetos de Alexandre Fuzeti" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
+      
       <main className="main">
         {/* Header */}
         <header className="header-github">
@@ -261,7 +274,17 @@ export default function Home() {
               <div className="location">📍 Londrina, PR • 🎓 UEL</div>
             </div>
           </div>
-
+          <div className='about-section'>
+            <h2 className="section-title">Sobre mim</h2>
+            <div className="about-text">
+              <p>Desenvolvedor com entusiasmo para aprender e paixão por resolver desafios. Ansioso para contribuir em projetos inovadores. Comprometido com o aprimoramento constante e em deixar uma marca positiva no mundo do desenvolvimento de software.</p>
+            </div>
+            <h3 className="section-title" style={{fontSize: '1.3rem', marginTop: '2rem'}}>🎓 Formação</h3>
+            <ul className="education-list">
+              <li><strong>UEL</strong> - Bacharel em Ciência da Computação</li>
+              <li><strong>Inglês</strong> - Avançado</li>
+            </ul>
+          </div>
           <div className="github-showcase">
             <div className="stats-images">
               <img
@@ -305,18 +328,20 @@ export default function Home() {
               <div className="loading-spinner"></div>
               <p>Carregando projetos do GitHub...</p>
             </div>
-          ) : error ? (
-            <div className="error-message">
-              <h3>🔗 API GitHub Temporariamente Indisponível</h3>
-              <p>A conexão com a API do GitHub falhou temporariamente.</p>
-              <p><strong>Detalhes:</strong> {error}</p>
-              <p>📊 <strong>Mostrando projetos reais em modo offline:</strong></p>
-              <small style={{ opacity: 0.8, fontSize: '0.9rem' }}>
-                Os projetos abaixo são reais e atualizados, mas sendo exibidos localmente
-              </small>
-            </div>
           ) : (
             <>
+              {/* {error && (
+                <div className="error-message">
+                  <h3>🔗 API GitHub Temporariamente Indisponível</h3>
+                  <p>A conexão com a API do GitHub falhou temporariamente.</p>
+                  <p><strong>Detalhes:</strong> {error}</p>
+                  <p>📊 <strong>Mostrando projetos reais em modo offline:</strong></p>
+                  <small style={{ opacity: 0.8, fontSize: '0.9rem' }}>
+                    Os projetos abaixo são reais e atualizados, mas sendo exibidos localmente
+                  </small>
+                </div>
+              )} */}
+
               {/* Título da categoria ativa */}
               <div className="active-category-title">
                 {activeCategory === 'all' ? (
@@ -367,6 +392,16 @@ export default function Home() {
                           Demo
                         </a>
                       )}
+                      {project.site && (
+                        <a
+                          href={project.site}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="link-button demo"
+                        >
+                          🌐 Site
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -380,6 +415,7 @@ export default function Home() {
             </>
           )}
         </section>
+
 
         {/* Contato */}
         <section className="contact-section">
@@ -798,6 +834,33 @@ export default function Home() {
           background: rgba(255, 255, 255, 0.2);
           transform: translateY(-3px);
           box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .about-section {
+          background: rgba(255,255,255,0.07);
+          border-radius: 16px;
+          padding: 2rem 2rem 1.5rem 2rem;
+          margin: 0 auto 3rem auto;
+          max-width: 900px;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+          color: white;
+          backdrop-filter: blur(10px);
+        }
+        
+        .about-section .about-text {
+          font-size: 1.15rem;
+          line-height: 1.7;
+          margin-bottom: 1.5rem;
+        }
+        
+        .about-section .education-list {
+          margin: 0;
+          padding-left: 1.2rem;
+          font-size: 1.05rem;
+        }
+        
+        .about-section .education-list li {
+          margin-bottom: 0.5rem;
         }
 
         @media (max-width: 768px) {
