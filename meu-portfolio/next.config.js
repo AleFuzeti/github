@@ -5,7 +5,7 @@ const nextConfig = {
   images: {
     unoptimized: true // Permite usar imagens externas sem otimização
   },
-  // basePath e assetPrefix só para produção (GitHub Pages)
+  // basePath e assetPrefix só para produção no GitHub Pages
   ...(process.env.NODE_ENV === 'production' && {
     basePath: '/github',
     assetPrefix: '/github/'

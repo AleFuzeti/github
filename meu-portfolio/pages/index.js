@@ -14,19 +14,19 @@ export default function Home() {
   const categories = {
     'data-science': {
       name: 'Data Science',
-      icon: '🔬',
+      icon: '',
       keywords: ['visão computacional', 'redes neurais convolucionais', 'analise', 'simulação'],
       languages: []
     },
     'websites': {
       name: 'Websites e Apps',
-      icon: '🌐',
+      icon: '',
       keywords: ['site', 'apps', 'web', 'react', 'google'],
       languages: []
     },
     'other': {
       name: 'Outros',
-      icon: '🛠️',
+      icon: '',
       keywords: ['jogo', 'computação gráfica'],
       languages: []
     }
@@ -279,7 +279,7 @@ export default function Home() {
             <div className="about-text">
               <p>Desenvolvedor com entusiasmo para aprender e paixão por resolver desafios. Ansioso para contribuir em projetos inovadores. Comprometido com o aprimoramento constante e em deixar uma marca positiva no mundo do desenvolvimento de software.</p>
             </div>
-            <h3 className="section-title" style={{fontSize: '1.3rem', marginTop: '2rem'}}>🎓 Formação</h3>
+            <h3 className="section-title" style={{fontSize: '1.3rem', marginTop: '2rem'}}>Formação</h3>
             <ul className="education-list">
               <li><strong>UEL</strong> - Bacharel em Ciência da Computação</li>
               <li><strong>Inglês</strong> - Avançado</li>
@@ -302,7 +302,7 @@ export default function Home() {
 
         {/* Projetos */}
         <section className="projects-section">
-          <h2 className="section-title">🚀 Meus Projetos</h2>
+          <h2 className="section-title">Meus Projetos</h2>
 
           {/* Filtros de Categoria */}
           <div className="category-filters">
@@ -345,7 +345,7 @@ export default function Home() {
               {/* Título da categoria ativa */}
               <div className="active-category-title">
                 {activeCategory === 'all' ? (
-                  <h3>📁 Todos os Projetos ({getFilteredProjects().length})</h3>
+                  <h3>Todos os Projetos ({getFilteredProjects().length})</h3>
                 ) : (
                   <h3>
                     {categories[activeCategory].icon} {categories[activeCategory].name} ({getFilteredProjects().length})
@@ -520,7 +520,6 @@ export default function Home() {
         .info-text h1 {
           font-size: 2.5rem;
           margin: 0 0 0.5rem 0;
-          color: #ffd700;
           text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
           font-weight: 700;
         }
@@ -741,7 +740,6 @@ export default function Home() {
         .project-title {
           font-size: 1.3rem;
           margin-bottom: 0.5rem;
-          color: #ffd700;
           margin-top: 1rem;
         }
 
@@ -760,8 +758,7 @@ export default function Home() {
 
         .tech-badge {
           background: rgba(255, 215, 0, 0.2);
-          color: #ffd700;
-          padding: 0.2rem 0.5rem;
+=          padding: 0.2rem 0.5rem;
           border-radius: 4px;
           font-size: 0.8rem;
           border: 1px solid rgba(255, 215, 0, 0.3);
