@@ -29,6 +29,12 @@ export default function Home() {
       icon: '',
       keywords: ['jogo', 'computação gráfica'],
       languages: []
+    },
+    'publicados': {
+      name: 'Publicados',
+      icon: '',
+      keywords: [],
+      languages: []
     }
   }
 
@@ -43,12 +49,12 @@ export default function Home() {
       // Tenta primeiro diretamente
       let response = await fetch(url)
       if (response.ok) return response
-      
+
       // Se falhar, pode tentar com um proxy CORS (comentado por enquanto)
       // const proxyUrl = 'https://cors-anywhere.herokuapp.com/'
       // response = await fetch(proxyUrl + url)
       // return response
-      
+
       throw new Error(`Direct fetch failed with status: ${response.status}`)
     } catch (error) {
       console.log('Fetch with proxy also failed:', error)
@@ -57,44 +63,58 @@ export default function Home() {
   }
 
   const fetchGitHubProjects = async () => {
-    // Fallback: dados de exemplo para desenvolvimento
+    // Fallback: dados de exemplo para desenvolvimento (ordenados por prioridade)
+    // Simulando como seria com topics da API do GitHub
     const fallbackProjects = [
       {
         id: 1,
-        name: 'CNN-LIBRAS',
-        description: 'Visão Computacional e Redes Neurais Convolucionais para o reconhecimento de sinais da Língua Brasileira de Sinais por meio de imagens estáticas.',
-        html_url: 'https://github.com/AleFuzeti/CNN-LIBRAS',
-        language: 'Jupyter Notebook',
-        stargazers_count: 0,
-        category: 'data-science'
-      },
-      {
-        id: 2,
-        name: 'Reconhecedor-placas-de-carro',
-        description: 'Projeto de visão computacional para detecção e reconhecimento de placas de veículos utilizando OpenCV e OCR com Tesseract.',
-        html_url: 'https://github.com/AleFuzeti/Reconhecedor-placas-de-carro',
-        language: 'Python',
-        stargazers_count: 1,
-        category: 'data-science'
-      },
-      {
-        id: 3,
         name: 'Fabula-Ultima-Helper',
         description: 'Um aplicativo web para um sistema de RPG de mesa',
         html_url: 'https://github.com/AleFuzeti/Fabula-Ultima-Helper',
         site: 'https://alefuzeti.github.io/Fabula-Ultima-Helper/',
         language: 'JavaScript',
         stargazers_count: 1,
-        category: 'websites'
+        category: 'websites',
+        priority: 1,
+        status: 'concluido',
+        topics: ['1', 'concluido', 'rpg', 'javascript', 'website'] // Simulando topics
+      },
+      {
+        id: 2,
+        name: 'CNN-LIBRAS',
+        description: 'Visão Computacional e Redes Neurais Convolucionais para o reconhecimento de sinais da Língua Brasileira de Sinais por meio de imagens estáticas.',
+        html_url: 'https://github.com/AleFuzeti/CNN-LIBRAS',
+        language: 'Jupyter Notebook',
+        stargazers_count: 0,
+        category: 'data-science',
+        priority: 2,
+        status: 'concluido',
+        topics: ['2', 'concluido', 'machine-learning', 'computer-vision', 'python']
+      },
+      {
+        id: 3,
+        name: 'Reconhecedor-placas-de-carro',
+        description: 'Projeto de visão computacional para detecção e reconhecimento de placas de veículos utilizando OpenCV e OCR com Tesseract.',
+        html_url: 'https://github.com/AleFuzeti/Reconhecedor-placas-de-carro',
+        language: 'Python',
+        stargazers_count: 1,
+        category: 'data-science',
+        priority: 3,
+        status: 'concluido',
+        topics: ['3', 'concluido', 'opencv', 'ocr', 'computer-vision']
       },
       {
         id: 4,
         name: 'casamento-react',
         description: 'Site de casamento com react',
         html_url: 'https://github.com/AleFuzeti/casamento-react',
+        site: 'https://alefuzeti.github.io/casamento-react',
         language: 'JavaScript',
         stargazers_count: 0,
-        category: 'websites'
+        category: 'websites',
+        priority: 4,
+        status: 'em-andamento',
+        topics: ['4', 'em-andamento', 'react', 'website']
       },
       {
         id: 5,
@@ -103,16 +123,22 @@ export default function Home() {
         html_url: 'https://github.com/AleFuzeti/Planetario',
         language: 'C',
         stargazers_count: 0,
-        category: 'other'
+        category: 'other',
+        priority: 5,
+        status: 'concluido',
+        topics: ['5', 'concluido', 'graphics', 'opengl', 'c']
       },
       {
         id: 6,
-       name: 'Jogo-Reciclagem',
+        name: 'Jogo-Reciclagem',
         description: 'Projeto de jogo para testar o conhecimento básico de reciclagem',
         html_url: 'https://github.com/AleFuzeti/Jogo-Reciclagem',
         language: 'Python',
         stargazers_count: 0,
-        category: 'other'
+        category: 'other',
+        priority: 6,
+        status: 'concluido',
+        topics: ['6', 'concluido', 'game', 'python', 'education']
       }
     ]
 
@@ -120,7 +146,9 @@ export default function Home() {
       // Modo demonstração - usando projetos locais
       console.log('Modo demonstração - carregando projetos locais...')
       setError('Modo demonstração - usando projetos locais')
-      setProjects(fallbackProjects)
+      // Ordena por prioridade antes de definir os projetos
+      const sortedProjects = fallbackProjects.sort((a, b) => (a.priority || 999) - (b.priority || 999))
+      setProjects(sortedProjects)
       setLoading(false)
       return
     }
@@ -128,48 +156,58 @@ export default function Home() {
     try {
       console.log('Iniciando busca por projetos do GitHub...')
       setError(null)
-      
+
       // Controller para timeout
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 segundos timeout
-      
-      // Tenta primeiro a API oficial do GitHub
+
+      // Tenta primeiro a API oficial do GitHub com headers para incluir topics
       let response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100', {
         signal: controller.signal,
         headers: {
-          'Accept': 'application/vnd.github.v3+json'
+          'Accept': 'application/vnd.github.mercy-preview+json' // Header para incluir topics
         }
       })
-      
+
       clearTimeout(timeoutId)
-      
+
       console.log('Response status:', response.status)
       console.log('Response ok:', response.ok)
-      
+
       // Se der erro de rate limit ou CORS, tenta sem headers customizados
       if (!response.ok) {
         console.log('Primeira tentativa falhou, tentando sem headers customizados...')
-        
+
         const controller2 = new AbortController()
         const timeoutId2 = setTimeout(() => controller2.abort(), 8000) // 8 segundos timeout
-        
+
         response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100', {
           signal: controller2.signal
         })
-        
+
         clearTimeout(timeoutId2)
       }
-      
+
       if (!response.ok) {
         const errorText = await response.text()
         console.log('Error response text:', errorText)
         console.log('Response headers:', Object.fromEntries(response.headers.entries()))
         throw new Error(`API GitHub indisponível (${response.status}): ${response.statusText}`)
       }
-      
+
       const data = await response.json()
       console.log('Data received:', data.length, 'repositories')
       console.log('Sample repo:', data[0])
+
+      // Log das topics encontradas para debug
+      data.forEach(repo => {
+        if (repo.topics && repo.topics.length > 0) {
+          console.log(`Repo ${repo.name} topics:`, repo.topics)
+        }
+        if (repo.homepage) {
+          console.log(`Repo ${repo.name} website:`, repo.homepage)
+        }
+      })
 
       // Filtra apenas repos que não são forks e têm descrição
       const filteredProjects = data.filter(repo =>
@@ -180,26 +218,62 @@ export default function Home() {
 
       console.log('Filtered projects:', filteredProjects.length)
 
-      // Categoriza os projetos
-      const categorizedProjects = filteredProjects.map(repo => ({
-        ...repo,
-        category: categorizeProject(repo)
-      }))
+      // Categoriza os projetos e extrai metadados das topics
+      const categorizedProjects = filteredProjects.map(repo => {
+        const project = {
+          ...repo,
+          category: categorizeProject(repo)
+        }
+        //printa o repo no console
+        // console.log(`repo completo: ${JSON.stringify(repo, null, 2)}`)
 
-      setProjects(categorizedProjects)
-      console.log('Projects set successfully:', categorizedProjects.length, 'projects loaded')
+        // Usa o campo homepage do GitHub como site
+        if (repo.homepage) {
+          project.site = repo.homepage
+        }
+
+        // Extrai prioridade e status das topics
+        if (repo.topics && Array.isArray(repo.topics)) {
+          // Busca por números de prioridade (1, 2, 3, etc.)
+          const priorityTopic = repo.topics.find(topic => /^\d+$/.test(topic))
+          if (priorityTopic) {
+            project.priority = parseInt(priorityTopic)
+          }
+
+          // Busca por status nas topics
+          if (repo.topics.includes('concluido')) {
+            project.status = 'concluido'
+          } else if (repo.topics.includes('em-andamento') || repo.topics.includes('andamento')) {
+            project.status = 'em-andamento'
+          }
+        }
+
+        return project
+      })
+
+      // Ordena por prioridade (projetos sem prioridade vão para o final)
+      const sortedProjects = categorizedProjects.sort((a, b) => {
+        const priorityA = a.priority || 999
+        const priorityB = b.priority || 999
+        return priorityA - priorityB
+      })
+
+      setProjects(sortedProjects)
+      console.log('Projects set successfully:', sortedProjects.length, 'projects loaded')
     } catch (error) {
       console.error('Erro ao buscar projetos:', error)
       console.error('Error name:', error.name)
       console.error('Error message:', error.message)
-      
+
       if (error.name === 'AbortError') {
         setError('Timeout na API do GitHub - usando dados de exemplo')
       } else {
         setError(`API GitHub indisponível: ${error.message}`)
       }
-      
-      setProjects(fallbackProjects)
+
+      // Ordena por prioridade antes de definir os projetos
+      const sortedProjects = fallbackProjects.sort((a, b) => (a.priority || 999) - (b.priority || 999))
+      setProjects(sortedProjects)
       console.log('Using fallback projects')
     } finally {
       setLoading(false)
@@ -242,12 +316,18 @@ export default function Home() {
     if (activeCategory === 'all') {
       return projects
     }
+    if (activeCategory === 'publicados') {
+      return projects.filter(project => project.site || project.homepage)
+    }
     return projects.filter(project => project.category === activeCategory)
   }
 
   // Conta projetos por categoria
   const getProjectCount = (categoryKey) => {
     if (categoryKey === 'all') return projects.length
+    if (categoryKey === 'publicados') {
+      return projects.filter(project => project.site || project.homepage).length
+    }
     return projects.filter(project => project.category === categoryKey).length
   }
 
@@ -258,7 +338,7 @@ export default function Home() {
         <meta name="description" content="Portfólio de projetos de Alexandre Fuzeti" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      
+
       <main className="main">
         {/* Header */}
         <header className="header-github">
@@ -279,7 +359,7 @@ export default function Home() {
             <div className="about-text">
               <p>Desenvolvedor com entusiasmo para aprender e paixão por resolver desafios. Ansioso para contribuir em projetos inovadores. Comprometido com o aprimoramento constante e em deixar uma marca positiva no mundo do desenvolvimento de software.</p>
             </div>
-            <h3 className="section-title" style={{fontSize: '1.3rem', marginTop: '2rem'}}>Formação</h3>
+            <h3 className="section-title" style={{ fontSize: '1.3rem', marginTop: '2rem' }}>Formação</h3>
             <ul className="education-list">
               <li><strong>UEL</strong> - Bacharel em Ciência da Computação</li>
               <li><strong>Inglês</strong> - Avançado</li>
@@ -310,7 +390,7 @@ export default function Home() {
               className={`category-button ${activeCategory === 'all' ? 'active' : ''}`}
               onClick={() => setActiveCategory('all')}
             >
-              📁 Todos ({getProjectCount('all')})
+              Todos ({getProjectCount('all')})
             </button>
             {Object.entries(categories).map(([key, category]) => (
               <button
@@ -357,51 +437,48 @@ export default function Home() {
                 {getFilteredProjects().map((project) => (
                   <div key={project.id} className="project-card">
                     {/* Badge da categoria */}
-                    <div className="project-category-badge">
-                      {categories[project.category].icon} {categories[project.category].name}
+                    <div>
+                      <div className="project-category-badge">
+                        {categories[project.category].icon} {categories[project.category].name}
+                      </div>
+                      <h3 className="project-title">{project.name}</h3>
+                      <p className="project-description">{project.description}</p>
                     </div>
+                    <div>
+                      <div className="project-tech">
+                        {project.status && (
+                          <span className={`status-badge ${project.status === 'concluido' ? 'completed' : 'in-progress'}`}>
+                            {project.status === 'concluido' ? 'Concluído' : 'Em Andamento'}
+                          </span>
+                        )}
+                        {project.language && (
+                          <span className="tech-badge">{project.language}</span>
+                        )}
+                        {project.stargazers_count > 0 && (
+                          <span className="stars-badge">⭐ {project.stargazers_count}</span>
+                        )}
+                      </div>
 
-                    <h3 className="project-title">{project.name}</h3>
-                    <p className="project-description">{project.description}</p>
-
-                    <div className="project-tech">
-                      {project.language && (
-                        <span className="tech-badge">{project.language}</span>
-                      )}
-                      {project.stargazers_count > 0 && (
-                        <span className="stars-badge">⭐ {project.stargazers_count}</span>
-                      )}
-                    </div>
-
-                    <div className="project-links">
-                      <a
-                        href={project.html_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="link-button"
-                      >
-                        Ver Código
-                      </a>
-                      {project.homepage && (
+                      <div className="project-links">
                         <a
-                          href={project.homepage}
+                          href={project.html_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="link-button demo"
+                          className="link-button"
                         >
-                          Demo
+                          Ver Código
                         </a>
-                      )}
-                      {project.site && (
-                        <a
-                          href={project.site}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="link-button demo"
-                        >
-                          🌐 Site
-                        </a>
-                      )}
+                        {project.site && (
+                          <a
+                            href={project.site}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="link-button demo"
+                          >
+                            🌐 Site
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -709,6 +786,10 @@ export default function Home() {
         }
 
         .project-card {
+          display: flex;
+          text-align: justify;
+          flex-direction: column;
+          justify-content: space-between;
           background: rgba(255, 255, 255, 0.1);
           backdrop-filter: blur(10px);
           border-radius: 12px;
@@ -758,10 +839,30 @@ export default function Home() {
 
         .tech-badge {
           background: rgba(255, 215, 0, 0.2);
-=          padding: 0.2rem 0.5rem;
+          padding: 0.2rem 0.5rem;
           border-radius: 4px;
           font-size: 0.8rem;
           border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .status-badge {
+          padding: 0.2rem 0.6rem;
+          border-radius: 4px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          border: 1px solid;
+        }
+
+        .status-badge.completed {
+          background: rgba(76, 175, 80, 0.2);
+          color: #9bff9eff;
+          border-color: rgba(76, 175, 80, 0.4);
+        }
+
+        .status-badge.in-progress {
+          background: rgba(255, 152, 0, 0.2);
+          color: #ffd9a0ff;
+          border-color: rgba(255, 152, 0, 0.4);
         }
 
         .stars-badge {
@@ -845,6 +946,7 @@ export default function Home() {
         }
         
         .about-section .about-text {
+          text-align: justify;
           font-size: 1.15rem;
           line-height: 1.7;
           margin-bottom: 1.5rem;
