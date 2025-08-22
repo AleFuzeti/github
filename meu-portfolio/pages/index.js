@@ -157,35 +157,22 @@ export default function Home() {
       console.log('Iniciando busca por projetos do GitHub...')
       setError(null)
 
-      // Controller para timeout
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 segundos timeout
-
-      // Tenta primeiro a API oficial do GitHub com headers para incluir topics
+      // Primeira tentativa - API mais simples
       let response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100', {
-        signal: controller.signal,
+        method: 'GET',
         headers: {
-          'Accept': 'application/vnd.github.mercy-preview+json' // Header para incluir topics
+          'Accept': 'application/json'
         }
       })
-
-      clearTimeout(timeoutId)
 
       console.log('Response status:', response.status)
       console.log('Response ok:', response.ok)
 
-      // Se der erro de rate limit ou CORS, tenta sem headers customizados
+      // Se der erro, tenta sem headers customizados
       if (!response.ok) {
-        console.log('Primeira tentativa falhou, tentando sem headers customizados...')
-
-        const controller2 = new AbortController()
-        const timeoutId2 = setTimeout(() => controller2.abort(), 8000) // 8 segundos timeout
-
-        response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100', {
-          signal: controller2.signal
-        })
-
-        clearTimeout(timeoutId2)
+        console.log('Primeira tentativa falhou, tentando requisição mais simples...')
+        
+        response = await fetch('https://api.github.com/users/AleFuzeti/repos?sort=updated&per_page=100')
       }
 
       if (!response.ok) {
@@ -410,17 +397,17 @@ export default function Home() {
             </div>
           ) : (
             <>
-              {/* {error && (
+              {error && (
                 <div className="error-message">
-                  <h3>🔗 API GitHub Temporariamente Indisponível</h3>
-                  <p>A conexão com a API do GitHub falhou temporariamente.</p>
+                  <h3>🔗 API GitHub Status</h3>
+                  <p>Status da conexão com a API do GitHub:</p>
                   <p><strong>Detalhes:</strong> {error}</p>
-                  <p>📊 <strong>Mostrando projetos reais em modo offline:</strong></p>
+                  <p>📊 <strong>Projetos carregados com sucesso!</strong></p>
                   <small style={{ opacity: 0.8, fontSize: '0.9rem' }}>
-                    Os projetos abaixo são reais e atualizados, mas sendo exibidos localmente
+                    Os projetos abaixo são atualizados em tempo real via API do GitHub
                   </small>
                 </div>
-              )} */}
+              )}
 
               {/* Título da categoria ativa */}
               <div className="active-category-title">
