@@ -1,3 +1,0 @@
-# Cache Refresh
-This file forces GitHub Pages to refresh the cache.
-Timestamp: 2025-08-22 17:30:00
